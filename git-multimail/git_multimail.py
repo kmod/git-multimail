@@ -1697,6 +1697,8 @@ class ConfigOptionsEnvironmentMixin(ConfigEnvironmentMixin):
         if reply_to_refchange is not None:
             self.reply_to_refchange = reply_to_refchange
 
+        self.dont_compute_new_revs = self.config.get_bool('dontComputeNewRevs')
+
     def get_administrator(self):
         return (
             self.config.get('administrator')
@@ -2071,7 +2073,10 @@ class Push(object):
 
         # The SHA-1s of commits referred to by references unaffected
         # by this push:
-        other_ref_sha1s = self._compute_other_ref_sha1s()
+        if self.changes[0].environment.dont_compute_new_revs:
+            other_ref_sha1s = set()
+        else:
+            other_ref_sha1s = self._compute_other_ref_sha1s()
 
         self._old_rev_exclusion_spec = self._compute_rev_exclusion_spec(
             other_ref_sha1s.union(

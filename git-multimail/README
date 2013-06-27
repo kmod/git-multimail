@@ -357,6 +357,12 @@ multimailhook.replyToRefchange
     - The value "none", in which case the Reply-To: field will be
       omitted.
 
+multimailhook.dontComputeNewRevs
+
+    If set to true, then disable the detection of "new" commits, and
+    consider all commits as "new" (not "adds"). In particular, send a
+    notification email for all commits mentionned in the refchange
+    email.
 
 Email filtering
 ---------------
@@ -419,5 +425,6 @@ Footnotes
     seen does not work when it is used as an "update" script.  In
     particular, no notification email will be generated for a new
     commit that is added to multiple references in the same push.
+    A workaround is to set multimailhook.dontComputeNewRevs to true.
 
 [3] https://github.com/sitaramc/gitolite
