@@ -2101,10 +2101,12 @@ class Push(object):
         """Return the GitObjects referred to by references unaffected by this push."""
 
         # The refnames being changed by this push:
-        updated_refs = set(
+        updated_refs = [
             change.refname
             for change in self.changes
-            )
+            ]
+
+        updated_refs = set(read_git_lines(['rev-parse', '--symbolic-full-name'] + updated_refs))
 
         # The SHA-1s of commits referred to by all references in this
         # repository *except* updated_refs:
