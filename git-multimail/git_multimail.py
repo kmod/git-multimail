@@ -522,7 +522,11 @@ class Change(object):
         get_values().  The return value should always be a new
         dictionary."""
 
-        return self.environment.get_values()
+        values = self.environment.get_values()
+        fromaddr = self.environment.get_fromaddr(change=self)
+        if fromaddr is not None:
+            values['fromaddr'] = fromaddr
+        return values
 
     def get_values(self, **extra_values):
         """Return a dictionary {keyword : expansion} for this Change.
@@ -1449,11 +1453,13 @@ class Environment(object):
             Return the address to be used as the 'From' email address
             in the email envelope.
 
-        get_fromaddr()
+        get_fromaddr(change=None)
 
             Return the 'From' email address used in the email 'From:'
-            headers.  (May be a full RFC 2822 email address like 'Joe
-            User <user@example.com>'.)
+            headers.  If the change is known when this function is
+            called, it is passed in as the 'change' parameter.  (May
+            be a full RFC 2822 email address like 'Joe User
+            <user@example.com>'.)
 
         get_administrator()
 
@@ -1511,7 +1517,6 @@ class Environment(object):
             'administrator',
             'charset',
             'emailprefix',
-            'fromaddr',
             'pusher',
             'pusher_email',
             'repo_path',
@@ -1706,7 +1711,7 @@ class ConfigOptionsEnvironmentMixin(ConfigEnvironmentMixin):
     def get_sender(self):
         return self.config.get('envelopesender')
 
-    def get_fromaddr(self):
+    def get_fromaddr(self, change=None):
         fromaddr = self.config.get('from')
         if fromaddr:
             return fromaddr
