@@ -1975,17 +1975,8 @@ class ConfigRecipientsEnvironmentMixin(
             retval = config.get_recipients(name)
             if retval is not None:
                 return retval
-        if len(names) == 1:
-            hint = 'Please set "%s.%s"' % (config.section, name)
         else:
-            hint = (
-                'Please set one of the following:\n    "%s"'
-                % ('"\n    "'.join('%s.%s' % (config.section, name) for name in names))
-                )
-
-        raise ConfigurationException(
-            'The list of recipients for %s is not configured.\n%s' % (names[0], hint)
-            )
+            return ''
 
 
 class ProjectdescEnvironmentMixin(Environment):
