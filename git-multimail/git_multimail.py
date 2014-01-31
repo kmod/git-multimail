@@ -1925,6 +1925,10 @@ class StaticRecipientsEnvironmentMixin(Environment):
         # actual *contents* of the change being reported, we only
         # choose based on the *type* of the change.  Therefore we can
         # compute them once and for all:
+        if not (refchange_recipients
+                or announce_recipients
+                or revision_recipients):
+            raise ConfigurationException('No email recipients configured!')
         self.__refchange_recipients = refchange_recipients
         self.__announce_recipients = announce_recipients
         self.__revision_recipients = revision_recipients
