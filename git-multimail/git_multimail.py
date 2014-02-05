@@ -225,7 +225,7 @@ REVISION_HEADER_TEMPLATE = """\
 To: %(recipients)s
 Subject: %(emailprefix)s%(num)02d/%(tot)02d: %(oneline)s
 MIME-Version: 1.0
-Content-Type: text/plain; charset=%(charset)s
+Content-Type: text/html; charset=%(charset)s
 Content-Transfer-Encoding: 8bit
 From: %(fromaddr)s
 Reply-To: %(reply_to)s
@@ -239,6 +239,7 @@ Auto-Submitted: auto-generated
 """
 
 REVISION_INTRO_TEMPLATE = """\
+<pre>
 This is an automated email from the git hooks/post-receive script.
 
 %(pusher)s pushed a commit to %(refname_type)s %(short_refname)s
@@ -247,7 +248,7 @@ in repository %(repo_shortname)s.
 """
 
 
-REVISION_FOOTER_TEMPLATE = FOOTER_TEMPLATE
+REVISION_FOOTER_TEMPLATE = FOOTER_TEMPLATE + "</pre>"
 
 
 class CommandError(Exception):
@@ -747,10 +748,16 @@ class Revision(Change):
     def generate_email_body(self, push):
         """Show this revision."""
 
-        return read_git_lines(
+        for l in read_git_lines(
             ['log'] + self.environment.commitlogopts + ['-1', self.rev.sha1],
             keepends=True,
-            )
+            ):
+            if l.startswith('+'):
+                yield """<font style="color:blue">%s</font>\n""" % l.strip()
+            elif l.startswith('-') and l.strip() != '---':
+                yield """<font style="color:red">%s</font>\n""" % l.strip()
+            else:
+                yield l
 
     def generate_email_footer(self):
         return self.expand_lines(REVISION_FOOTER_TEMPLATE)
@@ -2253,15 +2260,15 @@ class Push(object):
         unhandled_sha1s = set(self.get_new_commits())
         for change in self.changes:
             # Check if we've got anyone to send to
-            if not change.recipients:
-                sys.stderr.write(
-                    '*** no recipients configured so no email will be sent\n'
-                    '*** for %r update %s->%s\n'
-                    % (change.refname, change.old.sha1, change.new.sha1,)
-                    )
-            else:
-                sys.stderr.write('Sending notification emails to: %s\n' % (change.recipients,))
-                mailer.send(change.generate_email(self, body_filter), change.recipients)
+            # if not change.recipients:
+                # sys.stderr.write(
+                    # '*** no recipients configured so no email will be sent\n'
+                    # '*** for %r update %s->%s\n'
+                    # % (change.refname, change.old.sha1, change.new.sha1,)
+                    # )
+            # else:
+                # sys.stderr.write('Sending notification emails to: %s\n' % (change.recipients,))
+                # mailer.send(change.generate_email(self, body_filter), change.recipients)
 
             sha1s = []
             for sha1 in reversed(list(self.get_new_commits(change))):
